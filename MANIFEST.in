@@ -1,0 +1,2 @@
+recursive-include edx_fga/static *
+recursive-include edx_fga/templates *

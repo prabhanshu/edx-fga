@@ -1,0 +1,170 @@
+{% load i18n %}
+
+<div class="fga-block" data-state="{{ student_state }}" data-max-size="{{ max_file_size }}"
+     data-staff="{{ is_course_staff }}">
+  <script type="text/template" id="fga-tmpl">
+    <% if (display_name) { %>
+       <b><%= display_name %></b>
+    <% } %>
+    <% if (freeform_answer) { %>
+      <p><b>Answer Given</b>
+        <%= freeform_answer.freeform_answer %></p>
+    <% } else { %>
+      <p>No Answer has been given.</p>
+    <% } %>
+    <% if (graded) { %>
+      <p>Your score is <%= graded.score %> / <%= max_score %><br/>
+        <% if (graded.comment) { %>
+          <b>Instructor comment</b> <%= graded.comment %>
+        <% } %>
+      </p>
+    <% } else if (freeform_answer) { %>
+      {% trans "This assignment has not yet been graded." %}
+    <% } %>
+    <% if (answer_allowed) { %>
+    <p>
+      <% if (freeform_answer) { %>
+        {% trans "Update your feedback" %}
+      <% } else { %>
+        {% trans "Provide your feedback" %}
+      <% } %>
+      <div class="upload">
+        <form id="sendFeedback" onsubmit="sendFeedback()">
+        <input type="text" name="feedback" id="feedback"/>
+        <input type="submit" name="submit" value="Submit" />
+        </form>
+      </div>
+    </p>
+    <% } %>
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+  </script>
+
+  <div id="fga-content">
+  </div>
+
+  {% if is_course_staff %}
+  <script type="text/template" id="fga-grading-tmpl">
+    <table class="gridtable tablesorter" id="submissions">
+      <thead>
+      <tr>
+        <th class="header">Username <i class="icon fa fa-sort"/></th>
+        <th class="header">Name <i class="icon fa fa-sort"/></th>
+        <th class="header">Feedback <i class="icon fa fa-sort"/></th>
+        <th class="header">Uploaded <i class="icon fa fa-sort"/></th>
+        <th class="header">Grade <i class="icon fa fa-sort"/></th>
+        <th class="header">Instructor's comments <i class="icon fa fa-sort"/></th>
+        <th class="header">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% for (var i = 0; i < assignments.length; i++) { %>
+      <%     var assignment = assignments[i]; %>
+        <tr id="row-<%= assignment.module_id %>">
+          <td><%= assignment.username %></td>
+          <td><%= assignment.fullname %></td>
+          <td>
+            <% if (assignment.freeform_answer) { %>
+                <%= assignment.freeform_answer %>
+            <% } %>
+          </td>
+          <td><%= assignment.timestamp %></td>
+          <td>
+            <% if (assignment.score !== null) { %>
+              <%= assignment.score %> /
+              <%= max_score %>
+              <% if (! assignment.approved) { %>
+                ({% trans "Awaiting instructor approval" %})
+              <% } %>
+            <% } %>
+          </td>
+          <td><%= assignment.comment %></td>
+          <td>
+            <% if (assignment.may_grade) { %>
+              <a class="enter-grade-button button" href="#{{ id }}-enter-grade">
+                <% if (assignment.needs_approval) { %>
+                  {% trans "Approve grade" %}
+                <% } else { %>
+                  {% trans "Enter grade" %}
+                <% } %>
+              </a>
+           <% } %>
+          </td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table>
+  </script>
+
+  <div aria-hidden="true" class="wrap-instructor-info">
+    <a class="instructor-info-action" id="grade-submissions-button"
+       href="#{{ id }}-grade">{% trans "Grade Submissions" %}</a>
+    <a class="instructor-info-action" id="staff-debug-info-button"
+       href="#{{ id }}-debug">{% trans "Staff Debug Info" %}</a>
+  </div>
+
+  <section aria-hidden="true" class="modal staff-modal" id="{{ id }}-grade" style="height: 75%">
+    <div class="inner-wrapper" style="color: black; overflow: auto;">
+      <header><h2><span class="display_name">{{ display_name }}</span> - {% trans "Freeform Graded Assignment" %}</h2></header>
+      <br/>
+      <div id="grade-info" style="display: block;">
+        Loading...
+      </div>
+    </div>
+  </section>
+
+  <section aria-hidden="true" class="modal staff-modal" 
+           style="height: 80%" id="{{ id }}-debug">
+    <div class="inner-wrapper" style="color: black">
+      <header><h2>{% trans "Staff Debug" %}</h2></header>
+      <br/>
+      <div class="staff_info" style="display: block; white-space: normal">
+        is_released = {{ is_released }}<br/>
+        location = {{ location }}<br/>
+        <br/>
+        <table summary="${_('Module Fields')}">
+          <tr><th>{% trans "Module Fields" %}</th></tr>
+          {% for name, field in fields %}
+          <tr>
+            <td>{{name}}</td>
+            <td>
+              <pre style="display:inline-block; margin: 0;">{{field}}</pre>
+            </td>
+          </tr>
+          {% endfor %}
+        </table><br/>
+        category = {{category}}
+      </div>
+    </div>
+  </section>
+
+  <section aria-hidden="true" class="modal grade-modal" id="{{ id }}-enter-grade">
+    <div class="inner-wrapper" style="color: black">
+      <header><h2>
+        {% trans "Enter Grade" %}
+      </h2></header>
+      <br/>
+      <div style="display: block;">
+        <form id="enter-grade-form">
+          <input id="module_id-input" type="hidden" name="module_id"/>
+          <input id="submission_id-input" type="hidden" name="submission_id"/>
+          <div>Grade for <span id="student-name"/></div>
+          <div>Grade: <input id="grade-input" name="grade"/>
+            <span class="error"></span></div>
+          <div>Comment: <textarea id="comment-input" name="comment" rows="4"></textarea></div>
+          <div>
+            <button type="submit">{% trans "Submit" %}</button>
+            <button type="button" id="enter-grade-cancel">
+              {% trans "Cancel" %}
+            </button>
+            <button type="button" id="remove-grade">
+              {% trans "Remove grade" %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</div>
