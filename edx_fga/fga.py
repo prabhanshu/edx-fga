@@ -414,11 +414,14 @@ class FreeformGradedAssignmentXBlock(XBlock):
         # require(self.upload_allowed())
         # upload = request.params['assignment']
         # sha1 = _get_sha1(upload.file)
+        freeform_answer = request.params.get('freeform_answer', None)
         answer = {
             # "sha1": sha1,
             # "filename": upload.file.name,
             # "mimetype": mimetypes.guess_type(upload.file.name)[0],
-            "freeform_answer": request.params["freeform_answer"]
+            "freeform_answer": freeform_answer
+
+
         }
         student_id = self.student_submission_id()
         submissions_api.create_submission(student_id, answer)

@@ -17,13 +17,6 @@ function FreeformGradedAssignmentXBlock(runtime, element) {
         var template = _.template($(element).find("#fga-tmpl").text());
         var gradingTemplate;
 
-        function sendFeedback(){
-            var form = $(element).find("#sendFeedback");
-            $.post(enterGradeUrl, form.serialize());
-            //  var feedback = $(content).find('#feedback').val();
-            // $.post(uploadUrl, fileUploadObj.feedback);
-        }
-
         function render(state) {
             // Add download urls to template context
             state.downloadUrl = downloadUrl;
@@ -36,7 +29,6 @@ function FreeformGradedAssignmentXBlock(runtime, element) {
             // Send Feedback
             var sendFeedback = $(element).find('#sendFeedback').submit(function(){
                 var form = $(element).find("#sendFeedback");
-                var feedback = $(element).find('#feedback').val();
                 $.post(uploadUrl, form.serialize());
                 render(state);
                 });
