@@ -21,7 +21,7 @@ Try Out on devstack/fullstack
 
    -  ``sudo su - edxapp -s /bin/bash``
    -  ``. edxapp_env``
-   -  ``pip install -e git+https://github.com/mitodl/edx-fga@release#egg=edx-fga``
+   -  ``pip install -e git+https://github.com/prabhanshu/edx-fga@master#egg=edx-fga``
 
 2. Add edx\_fga to installed Django apps
 
@@ -76,7 +76,7 @@ Create a branch of edx-platform to commit a few minor changes:
    
      .. code:: sh
    
-          -e git+https://github.com/mitodl/edx-fga@release#egg=edx-fga
+          -e git+https://github.com/prabhanshu/edx-fga@master#egg=edx-fga
 
 2. Add edx\_fga to installed Django apps
 
@@ -117,7 +117,7 @@ Course Authoring in edX Studio
    3. Add "edx\_fga" to module list.
    4. Studio should save your changes automatically.
    
-.. figure:: https://raw.githubusercontent.com/mitodl/edx-fga/screenshots/img/screenshot-studio-advanced-settings.png
+.. figure:: https://raw.githubusercontent.com/prabhanshu/edx-fga/screenshots/img/screenshot-studio-advanced-settings.png
    :alt: the Advanced Module List section in Advanced Settings
    
 2. Create an fga XBlock
