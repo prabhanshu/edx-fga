@@ -2,16 +2,9 @@
 function FreeformGradedAssignmentXBlock(runtime, element) {
     function xblock($, _) {
         var uploadUrl = runtime.handlerUrl(element, 'upload_assignment');
-        var downloadUrl = runtime.handlerUrl(element, 'download_assignment');
-        var annotatedUrl = runtime.handlerUrl(element, 'download_annotated');
         var getStaffGradingUrl = runtime.handlerUrl(
           element, 'get_staff_grading_data'
         );
-        var staffDownloadUrl = runtime.handlerUrl(element, 'staff_download');
-        var staffAnnotatedUrl = runtime.handlerUrl(
-          element, 'staff_download_annotated'
-        );
-        var staffUploadUrl = runtime.handlerUrl(element, 'staff_upload_annotated');
         var enterGradeUrl = runtime.handlerUrl(element, 'enter_grade');
         var removeGradeUrl = runtime.handlerUrl(element, 'remove_grade');
         var template = _.template($(element).find("#fga-tmpl").text());
@@ -19,8 +12,6 @@ function FreeformGradedAssignmentXBlock(runtime, element) {
 
         function render(state) {
             // Add download urls to template context
-            state.downloadUrl = downloadUrl;
-            state.annotatedUrl = annotatedUrl;
             state.error = state.error || false;
 
             // Render template
@@ -29,7 +20,15 @@ function FreeformGradedAssignmentXBlock(runtime, element) {
             // Send Feedback
             var sendFeedback = $(element).find('#sendFeedback').submit(function(){
                 var form = $(element).find("#sendFeedback");
-                $.post(uploadUrl, form.serialize());
+                $.ajax({
+                  type: "POST",
+                  url: uploadUrl,
+                  data: form.serialize(),
+                  cache: false,
+                  success: function(data){
+                      $("#answer_given").html(data.freeform_answer.freeform_answer);
+                  }
+                });
                 render(state);
                 });
 
@@ -47,10 +46,6 @@ function FreeformGradedAssignmentXBlock(runtime, element) {
             if (data.display_name !== '') {
                 $('.fga-block .display_name').html(data.display_name);
             }
-
-            // Add download urls to template context
-            data.downloadUrl = staffDownloadUrl;
-            data.annotatedUrl = staffAnnotatedUrl;
 
             // Render template
             $(element).find('#grade-info')

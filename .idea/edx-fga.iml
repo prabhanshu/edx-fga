@@ -8,7 +8,7 @@
   <component name="TemplatesService">
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/../edx-sga/edx_sga/templates" />
+        <option value="$MODULE_DIR$/edx_fga/templates" />
       </list>
     </option>
   </component>
