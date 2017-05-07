@@ -101,6 +101,20 @@ class FreeformGradedAssignmentXBlock(XBlock):
         help="Feedback given to student by instructor."
     )
 
+    auto_grade_min_word_count = Integer(
+        display_name="Minimum word count",
+        help=("Minimum word count to get answer auto-graded by staff."),
+        default=5,
+        scope=Scope.settings
+    )
+
+    auto_grade_max_word_count = Integer(
+        display_name="Maximum word count",
+        help=("Maximum word count to get answer auto-graded by staff."),
+        default=100,
+        scope=Scope.settings
+    )
+
     def max_score(self):
         """
         Return the maximum score possible.
@@ -313,7 +327,9 @@ class FreeformGradedAssignmentXBlock(XBlock):
                 for field, validator in (
                     (cls.display_name, 'string'),
                     (cls.points, 'number'),
-                    (cls.weight, 'number'))
+                    (cls.weight, 'number'),
+                    (cls.auto_grade_min_word_count, 'number'),
+                    (cls.auto_grade_max_word_count, 'number'))
             )
 
             context = {
@@ -368,6 +384,49 @@ class FreeformGradedAssignmentXBlock(XBlock):
                 )
         self.weight = weight
 
+        # Validate weight before saving
+        auto_grade_min_word_count = data.get('auto_grade_min_word_count', self.auto_grade_min_word_count)
+        # Check that weight is a float.
+        if auto_grade_min_word_count:
+            try:
+                auto_grade_min_word_count = int(auto_grade_min_word_count)
+            except ValueError:
+                raise JsonHandlerError(400, 'Minimum word count must be an integer')
+            # Check that we are positive
+            if auto_grade_min_word_count < 0:
+                raise JsonHandlerError(
+                    400, 'Minimum word count must be a positive integer'
+                )
+            if auto_grade_min_word_count > 100:
+                raise JsonHandlerError(
+                    400, 'Minimum word count must be less than 100'
+                )
+        self.auto_grade_min_word_count = auto_grade_min_word_count
+
+        # Validate weight before saving
+        auto_grade_max_word_count = data.get('auto_grade_max_word_count', self.auto_grade_max_word_count)
+        # Check that weight is a float.
+        if auto_grade_max_word_count:
+            try:
+                auto_grade_max_word_count = int(auto_grade_max_word_count)
+            except ValueError:
+                raise JsonHandlerError(400, 'Maximum word count must be an integer')
+            # Check that we are positive
+            if auto_grade_max_word_count < 0:
+                raise JsonHandlerError(
+                    400, 'Maximum word count must be a positive integer'
+                )
+            if auto_grade_max_word_count > 200:
+                raise JsonHandlerError(
+                    400, 'Maximum word count must be less than 200'
+                )
+            if auto_grade_max_word_count < auto_grade_min_word_count:
+                raise JsonHandlerError(
+                    400, 'Maximum word count must be greater than minimum word count'
+                )
+
+        self.auto_grade_max_word_count = auto_grade_max_word_count
+
     @XBlock.handler
     def upload_assignment(self, request, suffix=''):
         # pylint: disable=unused-argument
@@ -391,6 +450,7 @@ class FreeformGradedAssignmentXBlock(XBlock):
         # path = self._file_storage_path(sha1, upload.file.name)
         # if not default_storage.exists(path):
         #     default_storage.save(path, File(upload.file))
+
         return Response(json_body=self.student_state())
 
     @XBlock.handler
